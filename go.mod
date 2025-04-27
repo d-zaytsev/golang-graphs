@@ -1,3 +1,3 @@
-module github.com/Salvatore112/graph_analysis_algorithms
+module dzaytsev/golang-graphs
 
 go 1.24.0
