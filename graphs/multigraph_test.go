@@ -89,5 +89,5 @@ func TestMultipleEdgesBetweenVertices(t *testing.T) {
 }
 
 func countEdges(graph *MultiGraph, vertex1, vertex2 string) int {
-	return graph.vertices[vertex1][vertex2]
+	return graph.Vertices[vertex1][vertex2]
 }
