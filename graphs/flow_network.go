@@ -4,8 +4,8 @@ import "fmt"
 
 type FlowNetworkVertex int
 type FlowNetworkEdge[E any] struct {
-	capacity E
-	flow     E
+	Capacity E
+	Flow     E
 }
 
 type FlowNetwork[E any] struct {
