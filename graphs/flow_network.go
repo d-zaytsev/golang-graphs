@@ -1,6 +1,9 @@
 package graphs
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 type FlowNetworkVertex int
 type FlowNetworkEdge[E any] struct {
@@ -55,19 +58,24 @@ func (g *FlowNetwork[E]) RemoveEdge(vertex1, vertex2 FlowNetworkVertex) error {
 	return nil
 }
 
-func (g *FlowNetwork[E]) GetNeighbors(vertex FlowNetworkVertex) (map[FlowNetworkVertex]FlowNetworkEdge[E], error) {
+func (g *FlowNetwork[E]) GetNeighbors(vertex FlowNetworkVertex) ([]FlowNetworkVertex, error) {
 	neighbors, exists := g.vertices[vertex]
 
 	if !exists {
 		return nil, fmt.Errorf("Can't get neighbors of %v. It doesn't exist.", vertex)
 	}
 
-	copyMap := make(map[FlowNetworkVertex]FlowNetworkEdge[E])
-	for k, v := range neighbors {
-		copyMap[k] = v
+	neighbors_slice := make([]FlowNetworkVertex, len(neighbors))
+
+	i := 0
+	for k := range neighbors {
+		neighbors_slice[i] = k
+		i++
 	}
 
-	return copyMap, nil
+	slices.Sort(neighbors_slice)
+
+	return neighbors_slice, nil
 }
 
 func (g *FlowNetwork[E]) HasEdge(vertex1, vertex2 FlowNetworkVertex) bool {

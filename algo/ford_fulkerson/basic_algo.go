@@ -64,7 +64,7 @@ func (data *NetworkTaskData) UpdatePathCapacity(path []g.FlowNetworkVertex, capa
 		front_edge, front_exist := data.g.GetEdge(node_before, path[i])
 
 		if !front_exist {
-			return -1, fmt.Errorf("Can't find edge from vertex '%v' to vertex '%v'.", path[0], path[1])
+			data.g.AddEdge(node_before, path[i], g.FlowNetworkEdge[float64]{Capacity: capacity, Flow: 0})
 		} else {
 			// update capacity
 			front_edge.Capacity -= capacity
@@ -106,7 +106,7 @@ func (data NetworkTaskData) GetPathCapacity(path []g.FlowNetworkVertex) (float64
 	return min_capacity, nil
 }
 
-func DFS[E any](cur, t g.FlowNetworkVertex, graph g.FlowNetwork[E], path []g.FlowNetworkVertex, visited map[g.FlowNetworkVertex]bool) ([]g.FlowNetworkVertex, bool) {
+func DFS(cur, t g.FlowNetworkVertex, graph g.FlowNetwork[float64], path []g.FlowNetworkVertex, visited map[g.FlowNetworkVertex]bool) ([]g.FlowNetworkVertex, bool) {
 	new_path := append(path, cur)
 
 	if cur == t {
@@ -115,9 +115,9 @@ func DFS[E any](cur, t g.FlowNetworkVertex, graph g.FlowNetwork[E], path []g.Flo
 
 	if visited[cur] {
 		return nil, false
+	} else {
+		visited[cur] = true
 	}
-
-	visited[cur] = true
 
 	neighbors, err := graph.GetNeighbors(cur)
 
@@ -125,7 +125,7 @@ func DFS[E any](cur, t g.FlowNetworkVertex, graph g.FlowNetwork[E], path []g.Flo
 		return nil, false
 	}
 
-	for node := range neighbors {
+	for _, node := range neighbors {
 		res, res_code := DFS(node, t, graph, new_path, visited)
 
 		if res_code {
