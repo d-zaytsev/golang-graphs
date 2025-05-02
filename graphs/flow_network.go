@@ -2,7 +2,6 @@ package graphs
 
 import (
 	"fmt"
-	"slices"
 )
 
 type FlowNetworkVertex int
@@ -58,24 +57,20 @@ func (g *FlowNetwork[E]) RemoveEdge(vertex1, vertex2 FlowNetworkVertex) error {
 	return nil
 }
 
-func (g *FlowNetwork[E]) GetNeighbors(vertex FlowNetworkVertex) ([]FlowNetworkVertex, error) {
+func (g *FlowNetwork[E]) GetNeighbors(vertex FlowNetworkVertex) (map[FlowNetworkVertex]FlowNetworkEdge[E], error) {
 	neighbors, exists := g.vertices[vertex]
 
 	if !exists {
 		return nil, fmt.Errorf("Can't get neighbors of %v. It doesn't exist.", vertex)
 	}
 
-	neighbors_slice := make([]FlowNetworkVertex, len(neighbors))
+	return neighbors, nil
+}
 
-	i := 0
-	for k := range neighbors {
-		neighbors_slice[i] = k
-		i++
-	}
+func (g *FlowNetwork[E]) HasVertex(vertex FlowNetworkVertex) bool {
+	_, exists := g.vertices[vertex]
 
-	slices.Sort(neighbors_slice)
-
-	return neighbors_slice, nil
+	return exists
 }
 
 func (g *FlowNetwork[E]) HasEdge(vertex1, vertex2 FlowNetworkVertex) bool {

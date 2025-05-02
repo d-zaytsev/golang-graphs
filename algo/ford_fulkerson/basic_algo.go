@@ -15,6 +15,20 @@ type NetworkTaskData struct {
 	t g.FlowNetworkVertex
 }
 
+func MakeNetworkTaskData(network *g.FlowNetwork[float64], s, t g.FlowNetworkVertex) (*NetworkTaskData, error) {
+	if !network.HasVertex(s) {
+		return nil, fmt.Errorf("Source doesn't exist")
+	} else if !network.HasVertex(t) {
+		return nil, fmt.Errorf("Target doesn't exist")
+	}
+
+	return &NetworkTaskData{
+		g: network,
+		s: s,
+		t: t,
+	}, nil
+}
+
 func (data NetworkTaskData) DFS() ([]g.FlowNetworkVertex, bool) {
 	res, res_code := DFS(data.s, data.t, *data.g, make([]g.FlowNetworkVertex, 0), make(map[g.FlowNetworkVertex]bool))
 
@@ -125,7 +139,7 @@ func DFS(cur, t g.FlowNetworkVertex, graph g.FlowNetwork[float64], path []g.Flow
 		return nil, false
 	}
 
-	for _, node := range neighbors {
+	for node := range neighbors {
 		res, res_code := DFS(node, t, graph, new_path, visited)
 
 		if res_code {
