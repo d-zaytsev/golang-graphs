@@ -4,6 +4,8 @@ import (
 	g "dzaytsev/golang-graphs/graphs"
 	"fmt"
 	"math"
+	"sort"
+	"strings"
 )
 
 type NetworkTaskData struct {
@@ -13,6 +15,41 @@ type NetworkTaskData struct {
 	s g.FlowNetworkVertex
 	// sink
 	t g.FlowNetworkVertex
+}
+
+func (data *NetworkTaskData) GetCapacity(vertex1, vertex2 g.FlowNetworkVertex) float64 {
+	edge, exists := data.g.GetEdge(vertex1, vertex2)
+
+	if !exists {
+		return 0
+	} else {
+		return edge.Capacity
+	}
+}
+
+func (data *NetworkTaskData) GetFlow(vertex1, vertex2 g.FlowNetworkVertex) float64 {
+	edge, exists := data.g.GetEdge(vertex1, vertex2)
+
+	if !exists {
+		return 0
+	} else {
+		return edge.Flow
+	}
+}
+
+func (data *NetworkTaskData) SetFlow(vertex1, vertex2 g.FlowNetworkVertex, value float64) {
+	edge, exists := data.g.GetEdge(vertex1, vertex2)
+
+	if value <= 0 {
+		value = 0
+	}
+
+	if !exists {
+		data.g.AddEdge(vertex1, vertex2, g.FlowNetworkEdge[float64]{Flow: value})
+		return
+	}
+
+	edge.Flow = value
 }
 
 func MakeNetworkTaskData(network *g.FlowNetwork[float64], s, t g.FlowNetworkVertex) (*NetworkTaskData, error) {
@@ -29,118 +66,110 @@ func MakeNetworkTaskData(network *g.FlowNetwork[float64], s, t g.FlowNetworkVert
 	}, nil
 }
 
-func (data NetworkTaskData) DFS() ([]g.FlowNetworkVertex, bool) {
-	res, res_code := DFS(data.s, data.t, *data.g, make([]g.FlowNetworkVertex, 0), make(map[g.FlowNetworkVertex]bool))
-
-	return res, res_code
-}
-
-func (data NetworkTaskData) FordFulkerson() float64 {
-	// result
-	path_capacity_sum := 0.0
+func (data *NetworkTaskData) FordFulkerson() float64 {
+	// fmt.Println("start fulkerson...")
 
 	for true {
-		path, res_code := data.DFS()
 
-		// Can continue
+		// fmt.Println("Run DFS")
+		path, res_code := data.DFS()
+		// fmt.Println(data.PrintNetwork())
+
+		// Can find path
 		if res_code {
 			path_capacity, _ := data.GetPathCapacity(path)
-			path_capacity_sum += path_capacity
-			data.UpdatePathCapacity(path, path_capacity)
+
+			// fmt.Printf("Got new path: %s with c_f(p) = %f\n---\n", PrintPath(path), path_capacity)
+			data.BuildResidual(path, path_capacity)
 		} else {
 			break
 		}
 	}
 
-	return path_capacity_sum
-}
+	neighbors, _ := data.g.GetNeighbors(data.s)
+	res := 0.0
 
-func (data *NetworkTaskData) UpdatePathCapacity(path []g.FlowNetworkVertex, capacity float64) (float64, error) {
-	if len(path) == 0 {
-		return -1, fmt.Errorf("Path is empty")
+	for node := range neighbors {
+		res += data.GetFlow(data.s, node)
 	}
 
-	node_before := path[0]
+	return res
+}
+
+func (data *NetworkTaskData) DFS() ([]g.FlowNetworkVertex, bool) {
+	res, res_code := DFSHelper(data.s, data.t, data, make([]g.FlowNetworkVertex, 0), make(map[g.FlowNetworkVertex]bool))
+
+	return res, res_code
+}
+
+func (data *NetworkTaskData) BuildResidual(path []g.FlowNetworkVertex, min_capacity float64) error {
+	if len(path) == 0 {
+		return fmt.Errorf("Path is empty")
+	}
 
 	for i := 1; i < len(path); i++ {
-		// Back edges
-		back_edge, back_exist := data.g.GetEdge(path[i], node_before)
+		u := path[i-1]
+		v := path[i]
 
-		if !back_exist {
-			// create new back edge
-			data.g.AddEdge(path[i], node_before, g.FlowNetworkEdge[float64]{Capacity: capacity, Flow: 0})
-		} else {
-			// update capacity
-			back_edge.Capacity += capacity
-		}
+		// f(u,v) = f(u,v) + c_f(p)
+		data.SetFlow(u, v, data.GetFlow(u, v)+min_capacity)
 
-		// Front edges
-		front_edge, front_exist := data.g.GetEdge(node_before, path[i])
-
-		if !front_exist {
-			data.g.AddEdge(node_before, path[i], g.FlowNetworkEdge[float64]{Capacity: capacity, Flow: 0})
-		} else {
-			// update capacity
-			front_edge.Capacity -= capacity
-
-			// remove 0 capacity nodes
-			if front_edge.Capacity <= 0 {
-				data.g.RemoveEdge(node_before, path[i])
-			}
-		}
-
-		node_before = path[i]
+		// f(v,u) = f(v,u) - c_f(p)
+		data.SetFlow(v, u, data.GetFlow(v, u)-min_capacity)
 	}
 
-	return capacity, nil
+	return nil
 }
 
-func (data NetworkTaskData) GetPathCapacity(path []g.FlowNetworkVertex) (float64, error) {
+func (data *NetworkTaskData) GetPathCapacity(path []g.FlowNetworkVertex) (float64, error) {
 	if len(path) == 0 {
 		return -1, fmt.Errorf("Path is empty")
 	}
-
-	node_before := path[0]
 
 	var min_capacity = math.MaxFloat64
 
 	for i := 1; i < len(path); i++ {
-		edge, exist := data.g.GetEdge(node_before, path[i])
+		// c_f(p) = min {c_f (u,v)}
+		u := path[i-1]
+		v := path[i]
 
-		if !exist {
-			return -1, fmt.Errorf("Can't find edge from vertex '%v' to vertex '%v'.", path[0], path[1])
-		}
+		c_f := GetResidualCapacity(u, v, data)
 
-		if edge.Capacity < min_capacity {
-			min_capacity = edge.Capacity
+		if c_f < min_capacity {
+			min_capacity = c_f
 		}
-		node_before = path[i]
 	}
 
 	return min_capacity, nil
 }
 
-func DFS(cur, t g.FlowNetworkVertex, graph g.FlowNetwork[float64], path []g.FlowNetworkVertex, visited map[g.FlowNetworkVertex]bool) ([]g.FlowNetworkVertex, bool) {
-	new_path := append(path, cur)
+func DFSHelper(u, t g.FlowNetworkVertex, data *NetworkTaskData, path []g.FlowNetworkVertex, visited map[g.FlowNetworkVertex]bool) ([]g.FlowNetworkVertex, bool) {
+	new_path := append(path, u)
 
-	if cur == t {
+	if u == t {
 		return new_path, true
 	}
 
-	if visited[cur] {
+	if visited[u] {
 		return nil, false
 	} else {
-		visited[cur] = true
+		visited[u] = true
 	}
 
-	neighbors, err := graph.GetNeighbors(cur)
+	neighbors, err := data.g.GetNeighbors(u)
 
 	if err != nil {
 		return nil, false
 	}
 
-	for node := range neighbors {
-		res, res_code := DFS(node, t, graph, new_path, visited)
+	for v := range neighbors {
+		c_f := GetResidualCapacity(u, v, data)
+
+		if c_f <= 0 {
+			continue
+		}
+
+		res, res_code := DFSHelper(v, t, data, new_path, visited)
 
 		if res_code {
 			return res, true
@@ -148,4 +177,75 @@ func DFS(cur, t g.FlowNetworkVertex, graph g.FlowNetwork[float64], path []g.Flow
 	}
 
 	return nil, false
+}
+
+func GetResidualCapacity(u, v g.FlowNetworkVertex, data *NetworkTaskData) float64 {
+	if data.GetCapacity(u, v) > 0 {
+		return data.GetCapacity(u, v) - data.GetFlow(u, v)
+	} else if data.GetFlow(v, u) > 0 {
+		return data.GetFlow(v, u)
+	}
+
+	return 0
+}
+
+func (data *NetworkTaskData) PrintNetwork() string {
+	var builder strings.Builder
+	builder.WriteString("Flow Network:\n")
+
+	vertices := make([]g.FlowNetworkVertex, 0, len(data.g.Vertices))
+
+	for v := range data.g.Vertices {
+		vertices = append(vertices, v)
+	}
+
+	sort.Slice(vertices, func(i, j int) bool {
+		return vertices[i] < vertices[j]
+	})
+
+	for _, u := range vertices {
+		neighbors := data.g.Vertices[u]
+		if len(neighbors) == 0 {
+			continue
+		}
+
+		builder.WriteString(fmt.Sprintf("Vertex %d → ", u))
+
+		neighborList := make([]g.FlowNetworkVertex, 0, len(neighbors))
+		for v := range neighbors {
+			neighborList = append(neighborList, v)
+		}
+		sort.Slice(neighborList, func(i, j int) bool {
+			return neighborList[i] < neighborList[j]
+		})
+
+		for i, v := range neighborList {
+			edge := neighbors[v]
+			if i > 0 {
+				builder.WriteString(", ")
+			}
+			builder.WriteString(fmt.Sprintf("%d [%.1f/%.1f]",
+				v, edge.Flow, edge.Capacity))
+		}
+		builder.WriteString("\n")
+	}
+
+	return builder.String()
+}
+
+func PrintPath(path []g.FlowNetworkVertex) string {
+	if len(path) == 0 {
+		return "Empty path"
+	}
+
+	var builder strings.Builder
+
+	for i, vertex := range path {
+		if i > 0 {
+			builder.WriteString(" → ")
+		}
+		builder.WriteString(fmt.Sprintf("%d", vertex))
+	}
+
+	return builder.String()
 }
