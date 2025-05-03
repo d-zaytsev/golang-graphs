@@ -5,16 +5,24 @@ import (
 	"slices"
 )
 
-func (data *NetworkTaskData) EdmondsKarp() float64 {
+func (data *NetworkTaskData) EdmondsKarp() (float64, error) {
 	for true {
 
-		path, res_code := data.ResudialNetworkBFS()
+		path, res_code := data.resudialNetworkBFS()
 
 		// Can find path
 		if res_code {
-			path_capacity, _ := data.GetPathMinCapacity(path)
+			path_capacity, err := data.getPathMinCapacity(path)
 
-			data.UpdateFlow(path, path_capacity)
+			if err != nil {
+				return -1, err
+			}
+
+			err = data.updateFlow(path, path_capacity)
+
+			if err != nil {
+				return -1, err
+			}
 		} else {
 			break
 		}
@@ -27,10 +35,10 @@ func (data *NetworkTaskData) EdmondsKarp() float64 {
 		res += data.GetFlow(data.s, node)
 	}
 
-	return res
+	return res, nil
 }
 
-func (data *NetworkTaskData) ResudialNetworkBFS() ([]g.FlowNetworkVertex, bool) {
+func (data *NetworkTaskData) resudialNetworkBFS() ([]g.FlowNetworkVertex, bool) {
 	queue := []g.FlowNetworkVertex{data.s}
 
 	// parent of each node
@@ -51,7 +59,7 @@ func (data *NetworkTaskData) ResudialNetworkBFS() ([]g.FlowNetworkVertex, bool) 
 				continue
 			}
 
-			c_f := data.GetResidualEdgeCapacity(u, v)
+			c_f := data.getResidualEdgeCapacity(u, v)
 
 			if c_f <= 0 {
 				continue

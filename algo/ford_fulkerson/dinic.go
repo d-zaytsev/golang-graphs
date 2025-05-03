@@ -26,13 +26,13 @@ func (data *NetworkTaskData) Dinic() (float64, error) {
 			return -1, err
 		}
 
-		path_capacity, err := data.GetPathMinCapacity(path)
+		path_capacity, err := data.getPathMinCapacity(path)
 
 		if err != nil {
 			return -1, err
 		}
 
-		data.UpdateFlow(path, path_capacity)
+		data.updateFlow(path, path_capacity)
 	}
 
 	neighbors, _ := data.g.GetNeighbors(data.s)
@@ -145,7 +145,7 @@ func (data *NetworkTaskData) getDistance(v g.FlowNetworkVertex) (int, error) {
 				continue
 			}
 
-			c_f := data.GetResidualEdgeCapacity(u, t)
+			c_f := data.getResidualEdgeCapacity(u, t)
 
 			if c_f <= 0 {
 				continue

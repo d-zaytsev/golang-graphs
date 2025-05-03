@@ -20,7 +20,12 @@ func TestAlgo1(t *testing.T) {
 
 	test_data, _ := MakeNetworkTaskData(network, 0, 3)
 
-	res := test_data.FordFulkerson()
+	res, err := test_data.FordFulkerson()
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	if res != 10 {
 		t.Errorf("Incorrect result path: %v!", res)
@@ -50,7 +55,12 @@ func TestAlgo2(t *testing.T) {
 
 	test_data, _ := MakeNetworkTaskData(network, 0, 5)
 
-	res := test_data.FordFulkerson()
+	res, err := test_data.FordFulkerson()
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	if res != 10 {
 		t.Errorf("Incorrect result path: %v!", res)
@@ -74,7 +84,12 @@ func TestAlgo3(t *testing.T) {
 
 	test_data, _ := MakeNetworkTaskData(network, 0, 3)
 
-	res := test_data.FordFulkerson()
+	res, err := test_data.FordFulkerson()
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	if res != 2000 {
 		t.Errorf("Incorrect result path: %v!", res)

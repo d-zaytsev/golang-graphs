@@ -64,38 +64,51 @@ func MakeNetworkTaskData(network *g.FlowNetwork[float64], s, t g.FlowNetworkVert
 	}, nil
 }
 
-func (data *NetworkTaskData) FordFulkerson() float64 {
+func (data *NetworkTaskData) FordFulkerson() (float64, error) {
 	for true {
 
-		path, res_code := data.ResidualNetworkDFS()
+		path, res_code := data.residualNetworkDFS()
 
 		// Can find path
 		if res_code {
-			path_capacity, _ := data.GetPathMinCapacity(path)
+			path_capacity, err := data.getPathMinCapacity(path)
 
-			data.UpdateFlow(path, path_capacity)
+			if err != nil {
+				return -1, err
+			}
+
+			err = data.updateFlow(path, path_capacity)
+
+			if err != nil {
+				return -1, err
+			}
 		} else {
 			break
 		}
 	}
 
-	neighbors, _ := data.g.GetNeighbors(data.s)
+	neighbors, err := data.g.GetNeighbors(data.s)
+
+	if err != nil {
+		return -1, err
+	}
+
 	res := 0.0
 
 	for node := range neighbors {
 		res += data.GetFlow(data.s, node)
 	}
 
-	return res
+	return res, nil
 }
 
-func (data *NetworkTaskData) ResidualNetworkDFS() ([]g.FlowNetworkVertex, bool) {
-	res, res_code := DFSHelper(data.s, data.t, data, make([]g.FlowNetworkVertex, 0), make(map[g.FlowNetworkVertex]bool))
+func (data *NetworkTaskData) residualNetworkDFS() ([]g.FlowNetworkVertex, bool) {
+	res, res_code := dfsHelper(data.s, data.t, data, make([]g.FlowNetworkVertex, 0), make(map[g.FlowNetworkVertex]bool))
 
 	return res, res_code
 }
 
-func (data *NetworkTaskData) UpdateFlow(path []g.FlowNetworkVertex, min_capacity float64) error {
+func (data *NetworkTaskData) updateFlow(path []g.FlowNetworkVertex, min_capacity float64) error {
 	if len(path) == 0 {
 		return fmt.Errorf("Path is empty")
 	}
@@ -114,7 +127,7 @@ func (data *NetworkTaskData) UpdateFlow(path []g.FlowNetworkVertex, min_capacity
 	return nil
 }
 
-func (data *NetworkTaskData) GetPathMinCapacity(path []g.FlowNetworkVertex) (float64, error) {
+func (data *NetworkTaskData) getPathMinCapacity(path []g.FlowNetworkVertex) (float64, error) {
 	if len(path) == 0 {
 		return -1, fmt.Errorf("Path is empty")
 	}
@@ -126,7 +139,7 @@ func (data *NetworkTaskData) GetPathMinCapacity(path []g.FlowNetworkVertex) (flo
 		u := path[i-1]
 		v := path[i]
 
-		c_f := data.GetResidualEdgeCapacity(u, v)
+		c_f := data.getResidualEdgeCapacity(u, v)
 
 		if c_f < min_capacity {
 			min_capacity = c_f
@@ -136,7 +149,7 @@ func (data *NetworkTaskData) GetPathMinCapacity(path []g.FlowNetworkVertex) (flo
 	return min_capacity, nil
 }
 
-func DFSHelper(u, t g.FlowNetworkVertex, data *NetworkTaskData, path []g.FlowNetworkVertex, visited map[g.FlowNetworkVertex]bool) ([]g.FlowNetworkVertex, bool) {
+func dfsHelper(u, t g.FlowNetworkVertex, data *NetworkTaskData, path []g.FlowNetworkVertex, visited map[g.FlowNetworkVertex]bool) ([]g.FlowNetworkVertex, bool) {
 	new_path := append(path, u)
 
 	if u == t {
@@ -156,13 +169,13 @@ func DFSHelper(u, t g.FlowNetworkVertex, data *NetworkTaskData, path []g.FlowNet
 	}
 
 	for v := range neighbors {
-		c_f := data.GetResidualEdgeCapacity(u, v)
+		c_f := data.getResidualEdgeCapacity(u, v)
 
 		if c_f <= 0 {
 			continue
 		}
 
-		res, res_code := DFSHelper(v, t, data, new_path, visited)
+		res, res_code := dfsHelper(v, t, data, new_path, visited)
 
 		if res_code {
 			return res, true
@@ -172,7 +185,7 @@ func DFSHelper(u, t g.FlowNetworkVertex, data *NetworkTaskData, path []g.FlowNet
 	return nil, false
 }
 
-func (data *NetworkTaskData) GetResidualEdgeCapacity(u, v g.FlowNetworkVertex) float64 {
+func (data *NetworkTaskData) getResidualEdgeCapacity(u, v g.FlowNetworkVertex) float64 {
 	if data.GetCapacity(u, v) > 0 {
 		return data.GetCapacity(u, v) - data.GetFlow(u, v)
 	} else if data.GetFlow(v, u) > 0 {
