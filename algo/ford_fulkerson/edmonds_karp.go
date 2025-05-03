@@ -8,7 +8,7 @@ import (
 func (data *NetworkTaskData) EdmondsKarp() float64 {
 	for true {
 
-		path, res_code := data.BFS()
+		path, res_code := data.ResudialNetworkBFS()
 
 		// Can find path
 		if res_code {
@@ -30,7 +30,7 @@ func (data *NetworkTaskData) EdmondsKarp() float64 {
 	return res
 }
 
-func (data *NetworkTaskData) BFS() ([]g.FlowNetworkVertex, bool) {
+func (data *NetworkTaskData) ResudialNetworkBFS() ([]g.FlowNetworkVertex, bool) {
 	queue := []g.FlowNetworkVertex{data.s}
 
 	// parent of each node
