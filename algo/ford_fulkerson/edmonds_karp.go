@@ -12,9 +12,9 @@ func (data *NetworkTaskData) EdmondsKarp() float64 {
 
 		// Can find path
 		if res_code {
-			path_capacity, _ := data.GetPathCapacity(path)
+			path_capacity, _ := data.GetPathMinCapacity(path)
 
-			data.BuildResidual(path, path_capacity)
+			data.UpdateFlow(path, path_capacity)
 		} else {
 			break
 		}
@@ -51,7 +51,7 @@ func (data *NetworkTaskData) BFS() ([]g.FlowNetworkVertex, bool) {
 				continue
 			}
 
-			c_f := GetResidualCapacity(u, v, data)
+			c_f := data.GetResidualEdgeCapacity(u, v)
 
 			if c_f <= 0 {
 				continue

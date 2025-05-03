@@ -4,8 +4,6 @@ import (
 	g "dzaytsev/golang-graphs/graphs"
 	"fmt"
 	"math"
-	"sort"
-	"strings"
 )
 
 type NetworkTaskData struct {
@@ -67,20 +65,15 @@ func MakeNetworkTaskData(network *g.FlowNetwork[float64], s, t g.FlowNetworkVert
 }
 
 func (data *NetworkTaskData) FordFulkerson() float64 {
-	// fmt.Println("start fulkerson...")
-
 	for true {
 
-		// fmt.Println("Run DFS")
-		path, res_code := data.DFS()
-		// fmt.Println(data.PrintNetwork())
+		path, res_code := data.ResidualNetworkDFS()
 
 		// Can find path
 		if res_code {
-			path_capacity, _ := data.GetPathCapacity(path)
+			path_capacity, _ := data.GetPathMinCapacity(path)
 
-			// fmt.Printf("Got new path: %s with c_f(p) = %f\n---\n", PrintPath(path), path_capacity)
-			data.BuildResidual(path, path_capacity)
+			data.UpdateFlow(path, path_capacity)
 		} else {
 			break
 		}
@@ -96,13 +89,13 @@ func (data *NetworkTaskData) FordFulkerson() float64 {
 	return res
 }
 
-func (data *NetworkTaskData) DFS() ([]g.FlowNetworkVertex, bool) {
+func (data *NetworkTaskData) ResidualNetworkDFS() ([]g.FlowNetworkVertex, bool) {
 	res, res_code := DFSHelper(data.s, data.t, data, make([]g.FlowNetworkVertex, 0), make(map[g.FlowNetworkVertex]bool))
 
 	return res, res_code
 }
 
-func (data *NetworkTaskData) BuildResidual(path []g.FlowNetworkVertex, min_capacity float64) error {
+func (data *NetworkTaskData) UpdateFlow(path []g.FlowNetworkVertex, min_capacity float64) error {
 	if len(path) == 0 {
 		return fmt.Errorf("Path is empty")
 	}
@@ -121,7 +114,7 @@ func (data *NetworkTaskData) BuildResidual(path []g.FlowNetworkVertex, min_capac
 	return nil
 }
 
-func (data *NetworkTaskData) GetPathCapacity(path []g.FlowNetworkVertex) (float64, error) {
+func (data *NetworkTaskData) GetPathMinCapacity(path []g.FlowNetworkVertex) (float64, error) {
 	if len(path) == 0 {
 		return -1, fmt.Errorf("Path is empty")
 	}
@@ -133,7 +126,7 @@ func (data *NetworkTaskData) GetPathCapacity(path []g.FlowNetworkVertex) (float6
 		u := path[i-1]
 		v := path[i]
 
-		c_f := GetResidualCapacity(u, v, data)
+		c_f := data.GetResidualEdgeCapacity(u, v)
 
 		if c_f < min_capacity {
 			min_capacity = c_f
@@ -163,7 +156,7 @@ func DFSHelper(u, t g.FlowNetworkVertex, data *NetworkTaskData, path []g.FlowNet
 	}
 
 	for v := range neighbors {
-		c_f := GetResidualCapacity(u, v, data)
+		c_f := data.GetResidualEdgeCapacity(u, v)
 
 		if c_f <= 0 {
 			continue
@@ -179,7 +172,7 @@ func DFSHelper(u, t g.FlowNetworkVertex, data *NetworkTaskData, path []g.FlowNet
 	return nil, false
 }
 
-func GetResidualCapacity(u, v g.FlowNetworkVertex, data *NetworkTaskData) float64 {
+func (data *NetworkTaskData) GetResidualEdgeCapacity(u, v g.FlowNetworkVertex) float64 {
 	if data.GetCapacity(u, v) > 0 {
 		return data.GetCapacity(u, v) - data.GetFlow(u, v)
 	} else if data.GetFlow(v, u) > 0 {
@@ -187,65 +180,4 @@ func GetResidualCapacity(u, v g.FlowNetworkVertex, data *NetworkTaskData) float6
 	}
 
 	return 0
-}
-
-func (data *NetworkTaskData) PrintNetwork() string {
-	var builder strings.Builder
-	builder.WriteString("Flow Network:\n")
-
-	vertices := make([]g.FlowNetworkVertex, 0, len(data.g.Vertices))
-
-	for v := range data.g.Vertices {
-		vertices = append(vertices, v)
-	}
-
-	sort.Slice(vertices, func(i, j int) bool {
-		return vertices[i] < vertices[j]
-	})
-
-	for _, u := range vertices {
-		neighbors := data.g.Vertices[u]
-		if len(neighbors) == 0 {
-			continue
-		}
-
-		builder.WriteString(fmt.Sprintf("Vertex %d → ", u))
-
-		neighborList := make([]g.FlowNetworkVertex, 0, len(neighbors))
-		for v := range neighbors {
-			neighborList = append(neighborList, v)
-		}
-		sort.Slice(neighborList, func(i, j int) bool {
-			return neighborList[i] < neighborList[j]
-		})
-
-		for i, v := range neighborList {
-			edge := neighbors[v]
-			if i > 0 {
-				builder.WriteString(", ")
-			}
-			builder.WriteString(fmt.Sprintf("%d [%.1f/%.1f]",
-				v, edge.Flow, edge.Capacity))
-		}
-		builder.WriteString("\n")
-	}
-
-	return builder.String()
-}
-
-func PrintPath(path []g.FlowNetworkVertex) string {
-	if len(path) == 0 {
-		return "Empty path"
-	}
-
-	var builder strings.Builder
-
-	for i, vertex := range path {
-		if i > 0 {
-			builder.WriteString(" → ")
-		}
-		builder.WriteString(fmt.Sprintf("%d", vertex))
-	}
-
-	return builder.String()
 }
