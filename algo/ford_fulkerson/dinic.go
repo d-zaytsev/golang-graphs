@@ -89,7 +89,6 @@ func (data *MaxFlowTaskData) levelGraphBFS() ([]g.FlowNetworkVertex, error) {
 			}
 
 			if !isEdgeInLevelGraph {
-				fmt.Println("edge is not in level graph")
 				continue
 			}
 
