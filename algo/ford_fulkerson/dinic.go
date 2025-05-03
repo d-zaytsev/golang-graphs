@@ -8,7 +8,7 @@ import (
 
 const INF_DIST = -2
 
-func (data *NetworkTaskData) Dinic() (float64, error) {
+func (data *MaxFlowTaskData) Dinic() (float64, error) {
 	for true {
 		t_dist, err := data.getDistance(data.t)
 
@@ -45,7 +45,7 @@ func (data *NetworkTaskData) Dinic() (float64, error) {
 	return res, nil
 }
 
-func (data *NetworkTaskData) levelGraphBFS() ([]g.FlowNetworkVertex, error) {
+func (data *MaxFlowTaskData) levelGraphBFS() ([]g.FlowNetworkVertex, error) {
 	// 1. Find G_l (distances)
 	distances := make(map[g.FlowNetworkVertex]int)
 	vertices := data.g.Vertices
@@ -109,7 +109,7 @@ func (data *NetworkTaskData) levelGraphBFS() ([]g.FlowNetworkVertex, error) {
 	return nil, fmt.Errorf("There is no blocking flow!")
 }
 
-func (data *NetworkTaskData) inLevelGraph(u, v g.FlowNetworkVertex, distances map[g.FlowNetworkVertex]int) (bool, error) {
+func (data *MaxFlowTaskData) inLevelGraph(u, v g.FlowNetworkVertex, distances map[g.FlowNetworkVertex]int) (bool, error) {
 	u_dist, u_exist := distances[u]
 	v_dist, v_exist := distances[v]
 
@@ -120,7 +120,7 @@ func (data *NetworkTaskData) inLevelGraph(u, v g.FlowNetworkVertex, distances ma
 	return v_dist == u_dist+1, nil
 }
 
-func (data *NetworkTaskData) getDistance(v g.FlowNetworkVertex) (int, error) {
+func (data *MaxFlowTaskData) getDistance(v g.FlowNetworkVertex) (int, error) {
 	if !data.g.HasVertex(v) {
 		return -1, fmt.Errorf("Vertex %v doesn't exist", v)
 	} else if data.s == v {

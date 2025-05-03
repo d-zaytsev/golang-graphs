@@ -6,7 +6,7 @@ import (
 	"math"
 )
 
-type NetworkTaskData struct {
+type MaxFlowTaskData struct {
 	// graph
 	g *g.FlowNetwork[float64]
 	// source
@@ -15,7 +15,7 @@ type NetworkTaskData struct {
 	t g.FlowNetworkVertex
 }
 
-func (data *NetworkTaskData) GetCapacity(vertex1, vertex2 g.FlowNetworkVertex) float64 {
+func (data *MaxFlowTaskData) GetCapacity(vertex1, vertex2 g.FlowNetworkVertex) float64 {
 	edge, exists := data.g.GetEdge(vertex1, vertex2)
 
 	if !exists {
@@ -25,7 +25,7 @@ func (data *NetworkTaskData) GetCapacity(vertex1, vertex2 g.FlowNetworkVertex) f
 	}
 }
 
-func (data *NetworkTaskData) GetFlow(vertex1, vertex2 g.FlowNetworkVertex) float64 {
+func (data *MaxFlowTaskData) GetFlow(vertex1, vertex2 g.FlowNetworkVertex) float64 {
 	edge, exists := data.g.GetEdge(vertex1, vertex2)
 
 	if !exists {
@@ -35,7 +35,7 @@ func (data *NetworkTaskData) GetFlow(vertex1, vertex2 g.FlowNetworkVertex) float
 	}
 }
 
-func (data *NetworkTaskData) SetFlow(vertex1, vertex2 g.FlowNetworkVertex, value float64) {
+func (data *MaxFlowTaskData) SetFlow(vertex1, vertex2 g.FlowNetworkVertex, value float64) {
 	edge, exists := data.g.GetEdge(vertex1, vertex2)
 
 	if value <= 0 {
@@ -50,21 +50,21 @@ func (data *NetworkTaskData) SetFlow(vertex1, vertex2 g.FlowNetworkVertex, value
 	edge.Flow = value
 }
 
-func MakeNetworkTaskData(network *g.FlowNetwork[float64], s, t g.FlowNetworkVertex) (*NetworkTaskData, error) {
+func MakeNetworkTaskData(network *g.FlowNetwork[float64], s, t g.FlowNetworkVertex) (*MaxFlowTaskData, error) {
 	if !network.HasVertex(s) {
 		return nil, fmt.Errorf("Source doesn't exist")
 	} else if !network.HasVertex(t) {
 		return nil, fmt.Errorf("Target doesn't exist")
 	}
 
-	return &NetworkTaskData{
+	return &MaxFlowTaskData{
 		g: network,
 		s: s,
 		t: t,
 	}, nil
 }
 
-func (data *NetworkTaskData) FordFulkerson() (float64, error) {
+func (data *MaxFlowTaskData) FordFulkerson() (float64, error) {
 	for true {
 
 		path, res_code := data.residualNetworkDFS()
@@ -102,13 +102,13 @@ func (data *NetworkTaskData) FordFulkerson() (float64, error) {
 	return res, nil
 }
 
-func (data *NetworkTaskData) residualNetworkDFS() ([]g.FlowNetworkVertex, bool) {
+func (data *MaxFlowTaskData) residualNetworkDFS() ([]g.FlowNetworkVertex, bool) {
 	res, res_code := dfsHelper(data.s, data.t, data, make([]g.FlowNetworkVertex, 0), make(map[g.FlowNetworkVertex]bool))
 
 	return res, res_code
 }
 
-func (data *NetworkTaskData) updateFlow(path []g.FlowNetworkVertex, min_capacity float64) error {
+func (data *MaxFlowTaskData) updateFlow(path []g.FlowNetworkVertex, min_capacity float64) error {
 	if len(path) == 0 {
 		return fmt.Errorf("Path is empty")
 	}
@@ -127,7 +127,7 @@ func (data *NetworkTaskData) updateFlow(path []g.FlowNetworkVertex, min_capacity
 	return nil
 }
 
-func (data *NetworkTaskData) getPathMinCapacity(path []g.FlowNetworkVertex) (float64, error) {
+func (data *MaxFlowTaskData) getPathMinCapacity(path []g.FlowNetworkVertex) (float64, error) {
 	if len(path) == 0 {
 		return -1, fmt.Errorf("Path is empty")
 	}
@@ -149,7 +149,7 @@ func (data *NetworkTaskData) getPathMinCapacity(path []g.FlowNetworkVertex) (flo
 	return min_capacity, nil
 }
 
-func dfsHelper(u, t g.FlowNetworkVertex, data *NetworkTaskData, path []g.FlowNetworkVertex, visited map[g.FlowNetworkVertex]bool) ([]g.FlowNetworkVertex, bool) {
+func dfsHelper(u, t g.FlowNetworkVertex, data *MaxFlowTaskData, path []g.FlowNetworkVertex, visited map[g.FlowNetworkVertex]bool) ([]g.FlowNetworkVertex, bool) {
 	new_path := append(path, u)
 
 	if u == t {
@@ -185,7 +185,7 @@ func dfsHelper(u, t g.FlowNetworkVertex, data *NetworkTaskData, path []g.FlowNet
 	return nil, false
 }
 
-func (data *NetworkTaskData) getResidualEdgeCapacity(u, v g.FlowNetworkVertex) float64 {
+func (data *MaxFlowTaskData) getResidualEdgeCapacity(u, v g.FlowNetworkVertex) float64 {
 	if data.GetCapacity(u, v) > 0 {
 		return data.GetCapacity(u, v) - data.GetFlow(u, v)
 	} else if data.GetFlow(v, u) > 0 {

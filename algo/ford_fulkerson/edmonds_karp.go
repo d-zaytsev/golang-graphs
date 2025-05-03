@@ -5,7 +5,7 @@ import (
 	"slices"
 )
 
-func (data *NetworkTaskData) EdmondsKarp() (float64, error) {
+func (data *MaxFlowTaskData) EdmondsKarp() (float64, error) {
 	for true {
 
 		path, res_code := data.resudialNetworkBFS()
@@ -38,7 +38,7 @@ func (data *NetworkTaskData) EdmondsKarp() (float64, error) {
 	return res, nil
 }
 
-func (data *NetworkTaskData) resudialNetworkBFS() ([]g.FlowNetworkVertex, bool) {
+func (data *MaxFlowTaskData) resudialNetworkBFS() ([]g.FlowNetworkVertex, bool) {
 	queue := []g.FlowNetworkVertex{data.s}
 
 	// parent of each node

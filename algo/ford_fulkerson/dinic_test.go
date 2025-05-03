@@ -5,15 +5,7 @@ import (
 )
 
 func TestDinicAlgo(t *testing.T) {
-	tests := []struct {
-		name         string
-		builder      func() (*NetworkTaskData, error)
-		expectedFlow float64
-	}{
-		{"Dinic Test 1", buildTaskData1, 10},
-		{"Dinic Test 2", buildTaskData2, 10},
-		{"Dinic Test 3", buildTaskData3, 2000},
-	}
+	tests := buildTestCases()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

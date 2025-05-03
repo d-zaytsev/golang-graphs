@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (data *NetworkTaskData) PrintNetwork() string {
+func (data *MaxFlowTaskData) PrintNetwork() string {
 	var builder strings.Builder
 	builder.WriteString("Flow Network:\n")
 
