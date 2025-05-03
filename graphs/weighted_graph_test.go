@@ -23,7 +23,7 @@ func TestAddEdgeInWeightedGraph(t *testing.T) {
 }
 
 func TestGetEdgesInWeightedGraph(t *testing.T) {
-	edgesExpected := map[Edge]struct{}{
+	edgesExpected := map[WeightedEdge]struct{}{
 		{"A", "B", 10}: {},
 		{"A", "C", 30}: {},
 		{"B", "C", 20}: {},
@@ -34,7 +34,7 @@ func TestGetEdgesInWeightedGraph(t *testing.T) {
 		graph.AddEdge(edge.U, edge.V, edge.Weight)
 	}
 	edges := graph.GetEdges()
-	resultEdges := make(map[Edge]struct{})
+	resultEdges := make(map[WeightedEdge]struct{})
 	for _, e := range edges {
 		resultEdges[e] = struct{}{}
 	}

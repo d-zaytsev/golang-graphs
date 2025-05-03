@@ -4,14 +4,14 @@ type WeightedGraph struct {
 	Vertices map[string]map[string]int
 }
 
-// Edge represents an edge in a weighted graph.
+// WeightedEdge represents an edge in a weighted graph.
 //
 // Fields:
 //
 //	U: The name of the first vertex (string).
 //	V: The name of the second vertex (string).
 //	Weight: The weight of the edge (int).
-type Edge struct {
+type WeightedEdge struct {
 	U      string
 	V      string
 	Weight int
@@ -60,8 +60,8 @@ func (g *WeightedGraph) GetEdgeWeight(vertex1, vertex2 string) (int, bool) {
 //
 // The function relies on the invariant of the Vertices map (u < v for any edge (u, v))
 // to ensure that it only adds one representation of each undirected edge to the result.
-func (g *WeightedGraph) GetEdges() []Edge {
-	edges := make([]Edge, 0)
+func (g *WeightedGraph) GetEdges() []WeightedEdge {
+	edges := make([]WeightedEdge, 0)
 	seen := make(map[[2]string]struct{})
 
 	for u := range g.Vertices {
@@ -74,7 +74,7 @@ func (g *WeightedGraph) GetEdges() []Edge {
 
 			if _, exists := seen[key]; !exists {
 				seen[key] = struct{}{}
-				edges = append(edges, Edge{a, b, weight})
+				edges = append(edges, WeightedEdge{a, b, weight})
 			}
 		}
 	}
