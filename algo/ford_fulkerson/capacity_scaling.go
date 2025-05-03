@@ -51,6 +51,94 @@ func (data *MaxFlowTaskData) CapacityScalingFordFulkerson() (float64, error) {
 	return res, nil
 }
 
+func (data *MaxFlowTaskData) CapacityScalingEdmondsKarp() (float64, error) {
+	U, err := data.findMaxGraphCapacity()
+
+	if err != nil {
+		return -1, err
+	}
+
+	delta := calcDelta(U)
+
+	for delta > 0 {
+
+		path, res_code := data.heuristicResudialNetworkBFS(delta)
+
+		if res_code {
+			path_capacity, err := data.getPathMinCapacity(path)
+
+			if err != nil {
+				return -1, err
+			}
+
+			err = data.updateFlow(path, path_capacity)
+
+			if err != nil {
+				return -1, err
+			}
+		} else {
+			delta /= 2
+		}
+	}
+
+	neighbors, err := data.g.GetNeighbors(data.s)
+
+	if err != nil {
+		return -1, err
+	}
+
+	res := 0.0
+
+	for node := range neighbors {
+		res += data.GetFlow(data.s, node)
+	}
+
+	return res, nil
+}
+
+func (data *MaxFlowTaskData) heuristicResudialNetworkBFS(delta float64) ([]g.FlowNetworkVertex, bool) {
+	queue := []g.FlowNetworkVertex{data.s}
+
+	// parent of each node
+	visited := make(map[g.FlowNetworkVertex]*g.FlowNetworkVertex)
+	visited[data.s] = nil
+
+	for len(queue) > 0 {
+		u := queue[0]
+		queue = queue[1:]
+
+		neighbours, _ := data.g.GetNeighbors(u)
+
+		for v := range neighbours {
+			_, exist := visited[v]
+
+			if exist {
+				// skip visited nodes
+				continue
+			}
+
+			c_f := data.getResidualEdgeCapacity(u, v)
+
+			if c_f <= 0 || c_f < delta {
+				continue
+			}
+
+			visited[v] = &u
+			queue = append(queue, v)
+
+			if v == data.t {
+				result := visitedToPath(v, visited, make([]g.FlowNetworkVertex, 0))
+				slices.Reverse(result)
+
+				return result, true
+
+			}
+		}
+	}
+
+	return nil, false
+}
+
 func (data *MaxFlowTaskData) heuristicResidualNetworkDFS(delta float64) ([]g.FlowNetworkVertex, bool) {
 	stack := make([]g.FlowNetworkVertex, 0)
 	visited := make(map[g.FlowNetworkVertex]*g.FlowNetworkVertex)
