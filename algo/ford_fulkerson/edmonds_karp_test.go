@@ -10,9 +10,9 @@ func TestEdmondsKarp(t *testing.T) {
 		builder      func() (*NetworkTaskData, error)
 		expectedFlow float64
 	}{
-		{"Test 1", buildTaskData1, 10},
-		{"Test 2", buildTaskData2, 10},
-		{"Test 3", buildTaskData3, 2000},
+		{"EdmondsKarp Test 1", buildTaskData1, 10},
+		{"EdmondsKarp Test 2", buildTaskData2, 10},
+		{"EdmondsKarp Test 3", buildTaskData3, 2000},
 	}
 
 	for _, tt := range tests {

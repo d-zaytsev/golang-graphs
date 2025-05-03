@@ -10,9 +10,9 @@ func TestFordFulkerson(t *testing.T) {
 		builder      func() (*NetworkTaskData, error)
 		expectedFlow float64
 	}{
-		{"Test 1", buildTaskData1, 10},
-		{"Test 2", buildTaskData2, 10},
-		{"Test 3", buildTaskData3, 2000},
+		{"Ford-Fulkerson Test 1", buildTaskData1, 10},
+		{"Ford-Fulkerson Test 2", buildTaskData2, 10},
+		{"Ford-Fulkerson Test 3", buildTaskData3, 2000},
 	}
 
 	for _, tt := range tests {

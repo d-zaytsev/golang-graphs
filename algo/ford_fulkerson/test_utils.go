@@ -4,10 +4,6 @@ import (
 	g "dzaytsev/golang-graphs/graphs"
 )
 
-type NetworkTaskBuilder struct {
-	network_builder func() *NetworkTaskData
-}
-
 func buildTaskData1() (*NetworkTaskData, error) {
 	network := g.MakeFlowNetwork[float64]()
 
