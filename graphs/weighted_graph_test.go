@@ -1,6 +1,7 @@
 package graphs
 
 import (
+	"maps"
 	"testing"
 )
 
@@ -18,6 +19,27 @@ func TestAddEdgeInWeightedGraph(t *testing.T) {
 	weight, exists := graph.GetEdgeWeight("A", "B")
 	if !exists || weight != 10 {
 		t.Errorf("Expected edge between A and B with weight 10, but got %d", weight)
+	}
+}
+
+func TestGetEdgesInWeightedGraph(t *testing.T) {
+	edgesExpected := map[WeightedEdge]struct{}{
+		{"A", "B", 10}: {},
+		{"A", "C", 30}: {},
+		{"B", "C", 20}: {},
+	}
+
+	graph := NewWeightedGraph()
+	for edge := range edgesExpected {
+		graph.AddEdge(edge.U, edge.V, edge.Weight)
+	}
+	edges := graph.GetEdges()
+	resultEdges := make(map[WeightedEdge]struct{})
+	for _, e := range edges {
+		resultEdges[e] = struct{}{}
+	}
+	if !maps.Equal(resultEdges, edgesExpected) {
+		t.Errorf("Expected edges %v, got %v", edgesExpected, resultEdges)
 	}
 }
 
