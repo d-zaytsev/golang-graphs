@@ -6,7 +6,6 @@ declare -A files=(
     ["internet.egr"]="https://userweb.cs.txstate.edu/~burtscher/research/ECLgraph/internet.egr"
     ["rmat16.sym.egr"]="https://userweb.cs.txstate.edu/~burtscher/research/ECLgraph/rmat16.sym.egr"
     ["citationCiteseer.egr"]="https://userweb.cs.txstate.edu/~burtscher/research/ECLgraph/citationCiteseer.egr"
-    ["coPapersDBLP.egr"]="https://userweb.cs.txstate.edu/~burtscher/research/ECLgraph/coPapersDBLP.egr"
 )
 
 download_dir="./experiment-graphs/"
