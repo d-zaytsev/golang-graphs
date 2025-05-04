@@ -20,11 +20,11 @@ func KruskalMST(g *graphs.WeightedGraph) (mst *graphs.WeightedGraph) {
 	verticesCount := len(g.Vertices)
 	for _, edge := range edges {
 		uID := vertexToID[edge.U]
-		if dsu.Find(uID) != dsu.Find(vertexToID[edge.V]) {
+		vID := vertexToID[edge.V]
+		if dsu.Find(uID) != dsu.Find(vID) {
 			mst.AddEdge(edge.U, edge.V, edge.Weight)
-			vID := vertexToID[edge.V]
 			dsu.Union(uID, vID)
-
+			edgesAdded++
 			if edgesAdded == verticesCount-1 {
 				break
 			}
