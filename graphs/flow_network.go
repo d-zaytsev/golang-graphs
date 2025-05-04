@@ -78,7 +78,12 @@ func (g *FlowNetwork[E]) HasEdge(vertex1, vertex2 FlowNetworkVertex) bool {
 	return exists
 }
 
-func (g *FlowNetwork[E]) GetEdge(vertex1, vertex2 FlowNetworkVertex) (*FlowNetworkEdge[E], bool) {
+func (g *FlowNetwork[E]) GetEdge(vertex1, vertex2 FlowNetworkVertex) (*FlowNetworkEdge[E], error) {
 	edge, exists := g.Vertices[vertex1][vertex2]
-	return edge, exists
+
+	if !exists {
+		return nil, fmt.Errorf("Edge (%v,%v) doesn't exist.", vertex1, vertex2)
+	}
+
+	return edge, nil
 }

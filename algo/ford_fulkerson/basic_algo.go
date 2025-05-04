@@ -16,7 +16,8 @@ type MaxFlowTaskData struct {
 }
 
 func (data *MaxFlowTaskData) GetCapacity(vertex1, vertex2 g.FlowNetworkVertex) float64 {
-	edge, exists := data.g.GetEdge(vertex1, vertex2)
+	exists := data.g.HasEdge(vertex1, vertex2)
+	edge, _ := data.g.GetEdge(vertex1, vertex2)
 
 	if !exists {
 		return 0
@@ -26,7 +27,8 @@ func (data *MaxFlowTaskData) GetCapacity(vertex1, vertex2 g.FlowNetworkVertex) f
 }
 
 func (data *MaxFlowTaskData) GetFlow(vertex1, vertex2 g.FlowNetworkVertex) float64 {
-	edge, exists := data.g.GetEdge(vertex1, vertex2)
+	exists := data.g.HasEdge(vertex1, vertex2)
+	edge, _ := data.g.GetEdge(vertex1, vertex2)
 
 	if !exists {
 		return 0
@@ -36,7 +38,8 @@ func (data *MaxFlowTaskData) GetFlow(vertex1, vertex2 g.FlowNetworkVertex) float
 }
 
 func (data *MaxFlowTaskData) SetFlow(vertex1, vertex2 g.FlowNetworkVertex, value float64) {
-	edge, exists := data.g.GetEdge(vertex1, vertex2)
+	exists := data.g.HasEdge(vertex1, vertex2)
+	edge, _ := data.g.GetEdge(vertex1, vertex2)
 
 	if value <= 0 {
 		value = 0
