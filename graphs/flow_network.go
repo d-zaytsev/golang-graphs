@@ -5,16 +5,16 @@ import (
 )
 
 type FlowNetworkVertex int
-type FlowNetworkEdge[E any] struct {
+type FlowNetworkEdge[E comparable] struct {
 	Capacity E
 	Flow     E
 }
 
-type FlowNetwork[E any] struct {
+type FlowNetwork[E comparable] struct {
 	Vertices map[FlowNetworkVertex]map[FlowNetworkVertex]*FlowNetworkEdge[E]
 }
 
-func MakeFlowNetwork[E any]() *FlowNetwork[E] {
+func MakeFlowNetwork[E comparable]() *FlowNetwork[E] {
 	return &FlowNetwork[E]{
 		Vertices: make(map[FlowNetworkVertex]map[FlowNetworkVertex]*FlowNetworkEdge[E]),
 	}
