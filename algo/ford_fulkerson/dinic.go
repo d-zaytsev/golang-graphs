@@ -6,21 +6,21 @@ import (
 	"slices"
 )
 
-const INF_DIST = -2
-
 func (data *MaxFlowTaskData) Dinic() (float64, error) {
 	for true {
-		t_dist, err := data.getDistance(data.t)
+		level_graph, err := data.getDistances()
 
 		if err != nil {
 			return -1, err
 		}
 
-		if t_dist == INF_DIST {
+		_, paths_exist := level_graph[data.t]
+
+		if !paths_exist {
 			break
 		}
 
-		path, err := data.levelGraphBFS()
+		path, err := data.findBlockingFlow(level_graph)
 
 		if err != nil {
 			return -1, err
@@ -45,22 +45,8 @@ func (data *MaxFlowTaskData) Dinic() (float64, error) {
 	return res, nil
 }
 
-func (data *MaxFlowTaskData) levelGraphBFS() ([]g.FlowNetworkVertex, error) {
-	// 1. Find G_l (distances)
-	distances := make(map[g.FlowNetworkVertex]int)
-	vertices := data.g.Vertices
-
-	for vertex := range vertices {
-		dist, err := data.getDistance(vertex)
-
-		if err != nil {
-			return nil, err
-		}
-
-		distances[vertex] = dist
-	}
-
-	// 2. Find Blocking flow (DFS)
+func (data *MaxFlowTaskData) findBlockingFlow(distances map[g.FlowNetworkVertex]int) ([]g.FlowNetworkVertex, error) {
+	// Find Blocking flow (DFS)
 	stack := make([]g.FlowNetworkVertex, 0)
 	visited := make(map[g.FlowNetworkVertex]*g.FlowNetworkVertex)
 
@@ -119,13 +105,7 @@ func (data *MaxFlowTaskData) inLevelGraph(u, v g.FlowNetworkVertex, distances ma
 	return v_dist == u_dist+1, nil
 }
 
-func (data *MaxFlowTaskData) getDistance(v g.FlowNetworkVertex) (int, error) {
-	if !data.g.HasVertex(v) {
-		return -1, fmt.Errorf("Vertex %v doesn't exist", v)
-	} else if data.s == v {
-		return 0, nil
-	}
-
+func (data *MaxFlowTaskData) getDistances() (map[g.FlowNetworkVertex]int, error) {
 	queue := []g.FlowNetworkVertex{data.s}
 
 	visited := make(map[g.FlowNetworkVertex]int)
@@ -152,13 +132,9 @@ func (data *MaxFlowTaskData) getDistance(v g.FlowNetworkVertex) (int, error) {
 
 			visited[t] = visited[u] + 1
 			queue = append(queue, t)
-
-			if t == v {
-				return visited[t], nil
-			}
 		}
 
 	}
 
-	return INF_DIST, nil
+	return visited, nil
 }
