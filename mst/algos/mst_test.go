@@ -34,7 +34,7 @@ func init() {
 		{U: "4", V: "7", Weight: 16}: {},
 		{U: "6", V: "7", Weight: 19}: {},
 	}
-	
+
 	edgesExpected2 = map[graphs.WeightedEdge]struct{}{
 		{U: "1", V: "2", Weight: 10}: {},
 		{U: "2", V: "5", Weight: 13}: {},
@@ -44,7 +44,6 @@ func init() {
 		{U: "6", V: "7", Weight: 19}: {},
 	}
 }
-
 
 func TestMST(t *testing.T) {
 	type args struct {
