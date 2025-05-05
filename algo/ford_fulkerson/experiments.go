@@ -67,7 +67,7 @@ func FordFulkersonHierarchicalNetworksExperiment() {
 func FordFulkersonHierarchicalNetworkExperiment() {
 	runExperiment("Ford-Fulkerson on Hierarchical Network",
 		func() (*MaxFlowTaskData, error) {
-			return buildHierarchicalNetwork(10, 25)
+			return buildHierarchicalNetwork(10, 20)
 		},
 		func(data *MaxFlowTaskData) (float64, error) {
 			return data.FordFulkerson()
@@ -77,17 +77,27 @@ func FordFulkersonHierarchicalNetworkExperiment() {
 func EdmondsKarpHierarchicalNetworkExperiment() {
 	runExperiment("EdmondsKarp on Hierarchical Network",
 		func() (*MaxFlowTaskData, error) {
-			return buildHierarchicalNetwork(10, 25)
+			return buildHierarchicalNetwork(10, 20)
 		},
 		func(data *MaxFlowTaskData) (float64, error) {
 			return data.EdmondsKarp()
 		})
 }
 
+func DinicHierarchicalNetworkExperiment() {
+	runExperiment("Dinic on Hierarchical Network",
+		func() (*MaxFlowTaskData, error) {
+			return buildHierarchicalNetwork(10, 10)
+		},
+		func(data *MaxFlowTaskData) (float64, error) {
+			return data.Dinic()
+		})
+}
+
 func CapacityScalingHierarchicalNetworkExperiment() {
 	runExperiment("Ford-Fulkerson(Capacity Scaling) on Hierarchical Network",
 		func() (*MaxFlowTaskData, error) {
-			return buildHierarchicalNetwork(10, 25)
+			return buildHierarchicalNetwork(10, 20)
 		},
 		func(data *MaxFlowTaskData) (float64, error) {
 			return data.CapacityScalingFordFulkerson()
@@ -95,20 +105,10 @@ func CapacityScalingHierarchicalNetworkExperiment() {
 
 	runExperiment("EdmondsKarp(Capacity Scaling) on Hierarchical Network",
 		func() (*MaxFlowTaskData, error) {
-			return buildHierarchicalNetwork(10, 25)
+			return buildHierarchicalNetwork(10, 20)
 		},
 		func(data *MaxFlowTaskData) (float64, error) {
 			return data.CapacityScalingEdmondsKarp()
-		})
-}
-
-func DinicHierarchicalNetworkExperiment() {
-	runExperiment("Dinic on Hierarchical Network",
-		func() (*MaxFlowTaskData, error) {
-			return buildHierarchicalNetwork(10, 25)
-		},
-		func(data *MaxFlowTaskData) (float64, error) {
-			return data.Dinic()
 		})
 }
 
@@ -232,6 +232,58 @@ func buildIrrationalNetwork() (*MaxFlowTaskData, error) {
 	}
 
 	return test_data, nil
+}
+
+func buildLargeRealisticNetwork() (*MaxFlowTaskData, error) {
+	const (
+		numNodes  = 15
+		numLayers = 4
+		minCap    = 10
+		maxCap    = 100
+		source    = 0
+		sink      = 14
+		layerSize = (numNodes - 2) / numLayers
+	)
+
+	network := g.MakeFlowNetwork[float64]()
+	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	for i := 0; i < numNodes; i++ {
+		network.AddVertex(g.FlowNetworkVertex(i))
+	}
+
+	layers := make([][]int, numLayers+1)
+	layers[0] = []int{source}
+	currID := 1
+	for l := 1; l < numLayers; l++ {
+		layer := []int{}
+		for j := 0; j < layerSize; j++ {
+			layer = append(layer, currID)
+			currID++
+		}
+		layers[l] = layer
+	}
+	layers[numLayers] = []int{sink}
+
+	for l := 0; l < numLayers; l++ {
+		for _, from := range layers[l] {
+			numConnections := rng.Intn(2) + 2
+			for i := 0; i < numConnections; i++ {
+				to := layers[l+1][rng.Intn(len(layers[l+1]))]
+				if from == to {
+					continue
+				}
+				capacity := float64(rng.Intn(maxCap-minCap+1) + minCap)
+				network.AddEdge(g.FlowNetworkVertex(from), g.FlowNetworkVertex(to), g.FlowNetworkEdge[float64]{Capacity: capacity})
+			}
+		}
+	}
+
+	taskData, err := MakeNetworkTaskData(network, source, sink)
+	if err != nil {
+		return nil, err
+	}
+	return taskData, nil
 }
 
 func buildHierarchicalNetwork(numLayers, nodesPerLayer int) (*MaxFlowTaskData, error) {

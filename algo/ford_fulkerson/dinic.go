@@ -7,7 +7,7 @@ import (
 )
 
 func (data *MaxFlowTaskData) Dinic() (float64, error) {
-	for true {
+	for {
 		level_graph, err := data.getDistances()
 
 		if err != nil {

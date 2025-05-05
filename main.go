@@ -8,6 +8,7 @@ import (
 func main() {
 	exp.FordFulkersonIrrationalNetworkExperiment()
 	fmt.Println()
+
 	exp.EdmondsKarpIrrationalNetworkExperiment()
 	fmt.Println()
 
@@ -17,6 +18,7 @@ func main() {
 	fmt.Println()
 	exp.DinicHierarchicalNetworkExperiment()
 	fmt.Println()
+
 	exp.CapacityScalingHierarchicalNetworkExperiment()
 
 }
