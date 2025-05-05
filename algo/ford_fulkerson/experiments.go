@@ -67,7 +67,7 @@ func FordFulkersonHierarchicalNetworksExperiment() {
 func FordFulkersonHierarchicalNetworkExperiment() {
 	runExperiment("Ford-Fulkerson on Hierarchical Network",
 		func() (*MaxFlowTaskData, error) {
-			return buildHierarchicalNetwork(10, 50)
+			return buildHierarchicalNetwork(10, 25)
 		},
 		func(data *MaxFlowTaskData) (float64, error) {
 			return data.FordFulkerson()
@@ -77,17 +77,35 @@ func FordFulkersonHierarchicalNetworkExperiment() {
 func EdmondsKarpHierarchicalNetworkExperiment() {
 	runExperiment("EdmondsKarp on Hierarchical Network",
 		func() (*MaxFlowTaskData, error) {
-			return buildHierarchicalNetwork(10, 50)
+			return buildHierarchicalNetwork(10, 25)
 		},
 		func(data *MaxFlowTaskData) (float64, error) {
 			return data.EdmondsKarp()
 		})
 }
 
+func CapacityScalingHierarchicalNetworkExperiment() {
+	runExperiment("Ford-Fulkerson(Capacity Scaling) on Hierarchical Network",
+		func() (*MaxFlowTaskData, error) {
+			return buildHierarchicalNetwork(10, 25)
+		},
+		func(data *MaxFlowTaskData) (float64, error) {
+			return data.CapacityScalingFordFulkerson()
+		})
+
+	runExperiment("EdmondsKarp(Capacity Scaling) on Hierarchical Network",
+		func() (*MaxFlowTaskData, error) {
+			return buildHierarchicalNetwork(10, 25)
+		},
+		func(data *MaxFlowTaskData) (float64, error) {
+			return data.CapacityScalingEdmondsKarp()
+		})
+}
+
 func DinicHierarchicalNetworkExperiment() {
 	runExperiment("Dinic on Hierarchical Network",
 		func() (*MaxFlowTaskData, error) {
-			return buildHierarchicalNetwork(10, 50)
+			return buildHierarchicalNetwork(10, 25)
 		},
 		func(data *MaxFlowTaskData) (float64, error) {
 			return data.Dinic()
@@ -191,19 +209,19 @@ func buildIrrationalNetwork() (*MaxFlowTaskData, error) {
 		network.AddVertex(g.FlowNetworkVertex(i))
 	}
 
-	sqrt2 := math.Sqrt(2)
-	sqrt3 := math.Sqrt(3)
+	sqrt1 := math.Sqrt(2) + math.Sqrt(3)
+	sqrt2 := math.Sqrt(3) + math.Sqrt(9)
 
-	network.AddEdge(0, 1, g.FlowNetworkEdge[float64]{Capacity: sqrt3})
-	network.AddEdge(1, 2, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
-	network.AddEdge(2, 5, g.FlowNetworkEdge[float64]{Capacity: sqrt3})
+	network.AddEdge(0, 1, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
+	network.AddEdge(1, 2, g.FlowNetworkEdge[float64]{Capacity: sqrt1})
+	network.AddEdge(2, 5, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
 
-	network.AddEdge(0, 3, g.FlowNetworkEdge[float64]{Capacity: sqrt3})
-	network.AddEdge(3, 4, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
-	network.AddEdge(4, 5, g.FlowNetworkEdge[float64]{Capacity: sqrt3})
+	network.AddEdge(0, 3, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
+	network.AddEdge(3, 4, g.FlowNetworkEdge[float64]{Capacity: sqrt1})
+	network.AddEdge(4, 5, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
 
-	network.AddEdge(1, 4, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
-	network.AddEdge(3, 2, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
+	network.AddEdge(1, 4, g.FlowNetworkEdge[float64]{Capacity: sqrt1})
+	network.AddEdge(3, 2, g.FlowNetworkEdge[float64]{Capacity: sqrt1})
 
 	test_data, err := MakeNetworkTaskData(network, 0, 5)
 
@@ -227,10 +245,10 @@ func buildHierarchicalNetwork(numLayers, nodesPerLayer int) (*MaxFlowTaskData, e
 		for i := 0; i < nodesPerLayer; i++ {
 			from := layer*nodesPerLayer + i
 
-			connections := rand.Intn(3) + 2
+			connections := rand.Intn(nodesPerLayer) + 2
 			for j := 0; j < connections; j++ {
 				to := (layer+1)*nodesPerLayer + rand.Intn(nodesPerLayer)
-				capacity := rand.Float64()*90 + 10 // Capacity in [10, 100]
+				capacity := rand.Float64()*999 + 1 // Capacity in [1, 1000]
 				network.AddEdge(g.FlowNetworkVertex(from), g.FlowNetworkVertex(to), g.FlowNetworkEdge[float64]{Capacity: capacity})
 			}
 

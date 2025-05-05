@@ -16,5 +16,7 @@ func main() {
 	exp.EdmondsKarpHierarchicalNetworkExperiment()
 	fmt.Println()
 	exp.DinicHierarchicalNetworkExperiment()
+	fmt.Println()
+	exp.CapacityScalingHierarchicalNetworkExperiment()
 
 }
