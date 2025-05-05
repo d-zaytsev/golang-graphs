@@ -6,7 +6,7 @@ import (
 )
 
 func (data *MaxFlowTaskData) EdmondsKarp() (float64, error) {
-	for true {
+	for {
 
 		path, res_code := data.resudialNetworkBFS()
 

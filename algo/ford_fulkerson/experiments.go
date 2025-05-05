@@ -209,21 +209,23 @@ func buildIrrationalNetwork() (*MaxFlowTaskData, error) {
 		network.AddVertex(g.FlowNetworkVertex(i))
 	}
 
-	sqrt1 := math.Sqrt(2) + math.Sqrt(3)
-	sqrt2 := math.Sqrt(3) + math.Sqrt(9)
+	r := (math.Sqrt(5) - 1) / 2
 
-	network.AddEdge(0, 1, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
-	network.AddEdge(1, 2, g.FlowNetworkEdge[float64]{Capacity: sqrt1})
-	network.AddEdge(2, 5, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
+	network.AddEdge(0, 1, g.FlowNetworkEdge[float64]{Capacity: 100})
+	network.AddEdge(0, 2, g.FlowNetworkEdge[float64]{Capacity: 100})
+	network.AddEdge(0, 4, g.FlowNetworkEdge[float64]{Capacity: 100})
 
-	network.AddEdge(0, 3, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
-	network.AddEdge(3, 4, g.FlowNetworkEdge[float64]{Capacity: sqrt1})
-	network.AddEdge(4, 5, g.FlowNetworkEdge[float64]{Capacity: sqrt2})
+	network.AddEdge(1, 3, g.FlowNetworkEdge[float64]{Capacity: 100})
 
-	network.AddEdge(1, 4, g.FlowNetworkEdge[float64]{Capacity: sqrt1})
-	network.AddEdge(3, 2, g.FlowNetworkEdge[float64]{Capacity: sqrt1})
+	network.AddEdge(2, 5, g.FlowNetworkEdge[float64]{Capacity: r})
+	network.AddEdge(2, 3, g.FlowNetworkEdge[float64]{Capacity: 100})
 
-	test_data, err := MakeNetworkTaskData(network, 0, 5)
+	network.AddEdge(4, 5, g.FlowNetworkEdge[float64]{Capacity: 1})
+	network.AddEdge(4, 1, g.FlowNetworkEdge[float64]{Capacity: 1})
+
+	network.AddEdge(5, 3, g.FlowNetworkEdge[float64]{Capacity: 100})
+
+	test_data, err := MakeNetworkTaskData(network, 0, 3)
 
 	if err != nil {
 		return nil, err

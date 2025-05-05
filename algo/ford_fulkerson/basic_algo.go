@@ -7,7 +7,7 @@ import (
 )
 
 func (data *MaxFlowTaskData) FordFulkerson() (float64, error) {
-	for true {
+	for {
 
 		path, res_code := data.residualNetworkDFS()
 
@@ -27,6 +27,7 @@ func (data *MaxFlowTaskData) FordFulkerson() (float64, error) {
 		} else {
 			break
 		}
+
 	}
 
 	neighbors, err := data.g.GetNeighbors(data.s)
