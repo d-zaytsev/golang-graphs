@@ -1,31 +1,31 @@
 package graphs
 
 type BasicGraph struct {
-	vertices map[string][]string
+	Vertices map[string][]string
 }
 
 func NewBasicGraph() *BasicGraph {
 	return &BasicGraph{
-		vertices: make(map[string][]string),
+		Vertices: make(map[string][]string),
 	}
 }
 
 func (g *BasicGraph) AddEdge(vertex1, vertex2 string) {
-	g.vertices[vertex1] = append(g.vertices[vertex1], vertex2)
-	g.vertices[vertex2] = append(g.vertices[vertex2], vertex1)
+	g.Vertices[vertex1] = append(g.Vertices[vertex1], vertex2)
+	g.Vertices[vertex2] = append(g.Vertices[vertex2], vertex1)
 }
 
 func (g *BasicGraph) RemoveEdge(vertex1, vertex2 string) {
-	g.vertices[vertex1] = removeElement(g.vertices[vertex1], vertex2)
-	g.vertices[vertex2] = removeElement(g.vertices[vertex2], vertex1)
+	g.Vertices[vertex1] = removeElement(g.Vertices[vertex1], vertex2)
+	g.Vertices[vertex2] = removeElement(g.Vertices[vertex2], vertex1)
 }
 
 func (g *BasicGraph) GetNeighbors(vertex string) []string {
-	return g.vertices[vertex]
+	return g.Vertices[vertex]
 }
 
 func (g *BasicGraph) HasEdge(vertex1, vertex2 string) bool {
-	for _, v := range g.vertices[vertex1] {
+	for _, v := range g.Vertices[vertex1] {
 		if v == vertex2 {
 			return true
 		}
